@@ -26,7 +26,7 @@ export default function App() {
         return <Cours />;
       case 'Eleves':
         return <Eleves />;
-      case 'ContratsPrets':
+      case 'Contrats Prêts':
         return <ContratsPrets />;
       case 'Instruments':
         return <Instruments />;
