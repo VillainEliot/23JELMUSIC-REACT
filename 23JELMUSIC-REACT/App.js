@@ -7,6 +7,7 @@ import Instruments from './components/Instruments';
 import Professionnels from './components/Professionnels';
 import Inscriptions from './components/Inscriptions';
 import Connexion from './components/Connexion';
+import Inscription from "./components/Inscription";
 
 const pages = [
   { title: 'Cours', component: Cours },
@@ -16,6 +17,7 @@ const pages = [
   { title: 'Professionnels', component: Professionnels },
   { title: 'Inscriptions', component: Inscriptions },
   { title: 'Connexion', component: Connexion },
+  { title: 'Créer un compte', component: Inscription }
 ];
 
 export default function App() {
@@ -38,6 +40,8 @@ export default function App() {
         return <Inscriptions />;
       case 'Connexion':
         return <Connexion />;
+      case 'Créer un compte':
+        return <Inscription />;
       default:
         return null;
     }

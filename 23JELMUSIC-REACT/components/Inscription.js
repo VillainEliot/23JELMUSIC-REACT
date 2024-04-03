@@ -1,34 +1,12 @@
 import React, { useState } from 'react';
-import {StyleSheet, Text, View, TextInput, Button} from 'react-native';
+import { StyleSheet, Text, View, TextInput, Button } from 'react-native';
 
-const Connexion = () => {
+const Inscription = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
-    const handleLogin = async () => {
-        if (!username || !password) {
-            alert("Veuillez saisir un nom d'utilisateur et un mot de passe.");
-            return;
-        }
+    const handleRegister = async () => {
 
-        // Simuler une requête asynchrone à un backend pour vérifier les informations d'identification
-        try {
-            // Simuler une attente de 1 seconde pour représenter une requête asynchrone
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            // Vérifier les informations d'identification
-            if (username === 'utilisateur' && password === 'motdepasse') {
-                // Connexion réussie
-                alert("Connexion réussie!");
-            } else {
-                // Identifiants invalides
-                alert("Nom d'utilisateur ou mot de passe incorrect.");
-            }
-        } catch (error) {
-            // Gérer les erreurs de connexion
-            console.error("Erreur de connexion:", error);
-            alert("Une erreur s'est produite lors de la connexion.");
-        }
     };
 
     return (
@@ -50,11 +28,11 @@ const Connexion = () => {
                 />
                 <Button
                     title="Connexion"
-                    onPress={handleLogin}
+                    onPress={handleRegister}
                     buttonStyle={styles.button}
                 />
-                <TextInput>Si vous n'avez pas de compte</TextInput>
-                <TextInput>veuillez vous en créer un !</TextInput>
+                <TextInput>Si vous avez déjà un compte</TextInput>
+                <TextInput>Veuillez vous connecter !</TextInput>
             </View>
         </View>
     );
@@ -99,4 +77,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default Connexion;
+export default Inscription;
