@@ -6,6 +6,8 @@ import ContratsPrets from './components/ContratsPrets';
 import Instruments from './components/Instruments';
 import Professionnels from './components/Professionnels';
 import Inscriptions from './components/Inscriptions';
+import Connexion from './components/Connexion';
+import Inscription from "./components/Inscription";
 
 const pages = [
   { title: 'Cours', component: Cours },
@@ -14,6 +16,8 @@ const pages = [
   { title: 'Instruments', component: Instruments },
   { title: 'Professionnels', component: Professionnels },
   { title: 'Inscriptions', component: Inscriptions },
+  { title: 'Connexion', component: Connexion },
+  { title: 'Créer un compte', component: Inscription }
 ];
 
 export default function App() {
@@ -34,6 +38,10 @@ export default function App() {
         return <Professionnels />;
       case 'Inscriptions':
         return <Inscriptions />;
+      case 'Connexion':
+        return <Connexion />;
+      case 'Créer un compte':
+        return <Inscription />;
       default:
         return null;
     }
@@ -49,7 +57,7 @@ export default function App() {
       <TouchableOpacity style={styles.menuButton} onPress={() => setMenuOpen(!menuOpen)}>
         <Text style={styles.menuButtonText}>Menu</Text>
       </TouchableOpacity>
-      
+
       <View style={[styles.absoluteContainer, { display: menuOpen ? 'flex' : 'none' }]}>
         <View style={styles.menu}>
           <FlatList
