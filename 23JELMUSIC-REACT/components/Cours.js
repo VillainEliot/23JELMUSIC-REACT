@@ -1,27 +1,54 @@
 import React from 'react';
 import { StyleSheet, Text, View, FlatList } from 'react-native';
+import axios from "axios";
 
 class Cours extends React.Component {
-    render() {
-        const coursData = [
-            { instrument: 'Piano', jour: 'Lundi', heureDebut: '10:00', heureFin: '12:00', ageMin: 6, ageMax: 99, placesDisponibles: 5 },
-            { instrument: 'Guitare', jour: 'Mardi', heureDebut: '14:00', heureFin: '16:00', ageMin: 8, ageMax: 99, placesDisponibles: 3 },
-            { instrument: 'Violon', jour: 'Mercredi', heureDebut: '16:00', heureFin: '18:00', ageMin: 7, ageMax: 99, placesDisponibles: 7 },
-        ];
 
+    componentDidMount() {
+        this.fetchCoursLister();
+        this.coursListerData = "";
+        console.log("1");
+    }
+
+    fetchCoursLister() {
+
+
+        console.log("2");
+        const request = new XMLHttpRequest();
+        request.onreadystatechange = e => {
+            if (request.readyState !== 4) {
+                return;
+            }
+
+            if (request.status === 200) {
+                console.log('success', request.responseText);
+                this.coursListerData = request.responseText;
+            } else {
+                console.warn('error');
+            }
+        };
+
+        request.open('GET', 'https://api.holamama.fr/cours/lister');
+        request.send();
+
+    }
+
+    render() {
+        console.log("3");
+        console.log(this.coursListerData);
         return (
             <View style={styles.container}>
                 <FlatList
-                    data={coursData}
+                    data={this.coursListerData}
                     renderItem={({ item }) => (
                         <View style={styles.coursItem}>
-                            <Text style={styles.instrument}>{item.instrument}</Text>
-                            <Text>Jour: {item.jour}</Text>
-                            <Text>Heure de début: {item.heureDebut}</Text>
-                            <Text>Heure de fin: {item.heureFin}</Text>
-                            <Text>Âge minimum: {item.ageMin}</Text>
-                            <Text>Âge maximum: {item.ageMax}</Text>
-                            <Text>Places disponibles: {item.placesDisponibles}</Text>
+                            <Text style={styles.instrument}>{item.id}</Text>
+                            <Text>Jour: {item.jours.libelle}</Text>
+                            <Text>Heure de début: {item.HeureDebut}</Text>
+                            <Text>Heure de fin: {item.HeureFin}</Text>
+                            <Text>Âge minimum: {item.AgeMini}</Text>
+                            <Text>Âge maximum: {item.AgeMaxi}</Text>
+                            <Text>Places disponibles: {item.NbPlaces}</Text>
                         </View>
                     )}
                     keyExtractor={(item, index) => index.toString()}
