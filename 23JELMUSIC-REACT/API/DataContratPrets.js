@@ -1,11 +1,11 @@
 import axios from 'axios';
 
-const API_URL = 'http://example.com/api';
+const API_URL = 'http://192.168.198.149/23JELMUSIC_API/public';
 
 // Fonction pour créer une entité
 const createContratsPrets = async (entityData) => {
     try {
-        const response = await axios.post(`${API_URL}/entities`, entityData);
+        const response = await axios.post(`${API_URL}/contratPret/ajouter`, entityData);
         return response.data;
     } catch (error) {
         console.error('Error creating entity:', error);
@@ -16,7 +16,7 @@ const createContratsPrets = async (entityData) => {
 // Fonction pour récupérer une seule entité par son ID
 const getContratsPretsById = async (entityId) => {
     try {
-        const response = await axios.get(`${API_URL}/entities/${entityId}`);
+        const response = await axios.get(`${API_URL}/contratPret/consulter/${entityId}`);
         return response.data;
     } catch (error) {
         console.error('Error fetching entity by ID:', error);
@@ -27,7 +27,7 @@ const getContratsPretsById = async (entityId) => {
 // Fonction pour récupérer toutes les entités
 const getContratsPrets = async () => {
     try {
-        const response = await axios.get(`${API_URL}/entities`);
+        const response = await axios.get(`${API_URL}/contratPret/lister`);
         return response.data;
     } catch (error) {
         console.error('Error fetching entities:', error);
@@ -38,7 +38,7 @@ const getContratsPrets = async () => {
 // Fonction pour mettre à jour une entité
 const updateContratsPrets = async (entityId, updatedData) => {
     try {
-        const response = await axios.put(`${API_URL}/entities/${entityId}`, updatedData);
+        const response = await axios.put(`${API_URL}/contratPret/modifier/${entityId}`, updatedData);
         return response.data;
     } catch (error) {
         console.error('Error updating entity:', error);
@@ -49,7 +49,7 @@ const updateContratsPrets = async (entityId, updatedData) => {
 // Fonction pour supprimer une entité
 const deleteContratsPrets = async (entityId) => {
     try {
-        const response = await axios.delete(`${API_URL}/entities/${entityId}`);
+        const response = await axios.delete(`${API_URL}/contratPret/supprimer/${entityId}`);
         return response.data;
     } catch (error) {
         console.error('Error deleting entity:', error);
