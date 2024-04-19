@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleSheet, Text, View, FlatList, Button, Modal, TextInput, Picker } from 'react-native';
+import { StyleSheet, Text, View, FlatList, Button, Modal, TextInput } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import axios from "axios"; // Assurez-vous d'inclure Picker ici
 
 class Cours extends React.Component {
@@ -237,7 +238,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         padding: 15,
         borderRadius: 5,
-        borderStyle: "solid 1px"
+        borderStyle: "solid"
     },
     label: {
         width: '40%', // Ajuster la largeur en fonction de vos besoins
