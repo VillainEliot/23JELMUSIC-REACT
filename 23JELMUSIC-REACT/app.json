@@ -22,7 +22,7 @@
         }
       }
     },
-    "platforms": ["ios", "android"],
+    "platforms": ["ios", "android", "web"],
     "android": {
       "permissions": ["INTERNET"],
       "adaptiveIcon": {
