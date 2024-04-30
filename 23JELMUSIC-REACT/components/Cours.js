@@ -1,7 +1,6 @@
 import React from 'react';
-import { StyleSheet, Text, View, FlatList, Button, Modal, TextInput } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import axios from "axios"; // Assurez-vous d'inclure Picker ici
+import {Button, FlatList, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {Picker} from '@react-native-picker/picker';
 
 class Cours extends React.Component {
     constructor(props) {
@@ -9,38 +8,114 @@ class Cours extends React.Component {
         this.state = {
             dataCours: [],
             showModifierModal: false,
+            showAjouterModal: false,
             coursIdToModify: null,
             ageMini: '',
             ageMaxi: '',
             heureDebut: '',
             heureFin: '',
             nbPlaces: '',
-            jourCours: '', // Jour du cours
-            joursDisponibles: [
-                {"id":1, "libelle": "Lundi"},
-                {"id":2, "libelle": "Mardi"},
-                {"id":3, "libelle": "Mercredi"},
-                {"id":4, "libelle": "Jeudi"},
-                {"id":5, "libelle": "Vendredi"},
-            ] // Liste des jours disponibles récupérés de l'API
+            professeur: '',
+            professeurs: [],// Liste des professeur disponibles récupérés de l'API
+            jourCours: '',
+            joursDisponibles: [], // Liste des jours disponibles récupérés de l'API
+            typeInstruments: '',
+            typesInstruments: [],
+            showConfirmationModal: false,
+            coursIdToDelete: null,
         };
     }
 
     componentDidMount() {
         this.fetchCoursLister();
+        this.fetchProfesseurs();
+        this.fetchJours();
+        this.fetchTypesInstruments();
     }
 
-    fetchCoursLister = async () => {
+    fetchTypesInstruments = async () => {
         try {
-            const response = await axios.get('https://api.holamama.fr/cours/lister');
-            const data = response.data;
-            this.setState({ dataCours: data });
+            const response = await fetch('http://api.holamama.fr/typeinstruments/lister');
+            if (!response.ok) {
+                throw new Error('Failed to fetch type instruments');
+            }
+            const json = await response.json();
+            this.setState({ typesInstruments: json });
         } catch (error) {
-            console.error('Error fetching data:', error);
-            this.setState({ dataCours: [] });
+            console.error('Fetch error:', error.message);
         }
     };
 
+    fetchJours = async () => {
+        try {
+            const response = await fetch('http://api.holamama.fr/jours/lister');
+            if (!response.ok) {
+                throw new Error('Failed to fetch jours');
+            }
+            const json = await response.json();
+            this.setState({ joursDisponibles: json });
+        } catch (error) {
+            console.error('Fetch error:', error.message);
+        }
+    };
+
+    fetchProfesseurs = async () => {
+        try {
+            const response = await fetch('http://api.holamama.fr/professeur/lister');
+            if (!response.ok) {
+                throw new Error('Failed to fetch professeurs');
+            }
+            const json = await response.json();
+            this.setState({ professeurs: json });
+        } catch (error) {
+            console.error('Fetch error:', error.message);
+        }
+    };
+
+    fetchCoursLister = async () => {
+        try {
+            const response = await fetch('http://api.holamama.fr/cours/lister/');
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok.');
+            }
+
+            const jsonData = await response.json();
+            this.setState({ dataCours: jsonData });
+            console.log('success', jsonData);
+        } catch (error) {
+            console.warn('Error fetching data:', error.message);
+        }
+    }
+
+    fetchCoursDelete = async (id) => {
+        try {
+            const url = `http://api.holamama.fr/cours/supprimer/${id}`;
+            const response = await fetch(url, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            });
+            if (!response.ok) {
+                throw new Error('Network response was not ok.');
+            }
+
+            const jsonData = await response.json();
+            console.log('success', jsonData);
+
+            // Fermer la modal de confirmation après la suppression
+            this.setState({
+                showConfirmationModal: false,
+                coursIdToDelete: null,
+            });
+
+            // Recharger la liste des cours
+            await this.fetchCoursLister();
+        } catch (error) {
+            console.warn('Error fetching data:', error.message);
+        }
+    }
     fetchCoursModifier = async () => {
         const {
             coursIdToModify,
@@ -49,23 +124,28 @@ class Cours extends React.Component {
             heureDebut,
             heureFin,
             nbPlaces,
-            jourCours
+            typeCours,
+            jourCours,
+            professeur,
+            typeInstruments
         } = this.state;
 
         try {
-            const response = await axios.post(`https://vps.holamama.fr/cours/modifier/${coursIdToModify}`, {
-                age_mini: ageMini,
-                age_maxi: ageMaxi,
-                heure_debut: heureDebut,
-                heure_fin: heureFin,
-                nb_places: nbPlaces,
-                typeCours: 1,
-                jours: jourCours, // Jour du cours
-                professeur: 1,
-                typeInstruments: 1
+            const url = `http://api.holamama.fr/cours/modifier/${coursIdToModify}?age_mini=${ageMini}&age_maxi=${ageMaxi}&heure_debut=${heureDebut}&heure_fin=${heureFin}&nb_places=${nbPlaces}&typeCours=1&jours=${jourCours}&professeur=${professeur}&typeInstruments=${typeInstruments}`;
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
             });
 
-            console.log('Course updated successfully:', response.data);
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const responseData = await response.json();
+            console.log('Course updated successfully:', responseData);
 
             // Fermer le formulaire et recharger la liste des cours
             this.setState({
@@ -76,29 +156,105 @@ class Cours extends React.Component {
                 heureDebut: '',
                 heureFin: '',
                 nbPlaces: '',
-                jourCours: ''
+                typeCours: '',
+                jourCours: '',
+                professeur: '',
+                typeInstruments: ''
             });
 
-            this.fetchCoursLister();
+            await this.fetchCoursLister(); // Recharger la liste des cours après la modification
         } catch (error) {
-            console.error('Error updating course:', error);
+            console.error('Error updating cours:', error);
+        }
+    };
+    fetchCoursAjouter = async () => {
+        const {
+            ageMini,
+            ageMaxi,
+            heureDebut,
+            heureFin,
+            nbPlaces,
+            typeCours,
+            jourCours,
+            professeur,
+            typeInstruments
+        } = this.state;
+
+        try {
+            const url = `http://api.holamama.fr/cours/ajouter?age_mini=${ageMini}&age_maxi=${ageMaxi}&heure_debut=${heureDebut}&heure_fin=${heureFin}&nb_places=${nbPlaces}&typeCours=1&jours=${jourCours}&professeur=${professeur}&typeInstruments=${typeInstruments}`;
+
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const responseData = await response.json();
+            console.log('Cours added successfully:', responseData);
+
+            // Fermer le formulaire et recharger la liste des cours
+            this.setState({
+                showAjouterModal: false,
+                coursIdToModify: null,
+                ageMini: '',
+                ageMaxi: '',
+                heureDebut: '',
+                heureFin: '',
+                nbPlaces: '',
+                typeCours: '',
+                jourCours: '',
+                professeur: '',
+                typeInstruments: ''
+            });
+
+            await this.fetchCoursLister(); // Recharger la liste des cours après la modification
+        } catch (error) {
+            console.error('Error adding cours:', error);
         }
     };
 
     render() {
+        const getFormattedTime = (dateTimeString) => {
+            return dateTimeString[11] + dateTimeString[12] + dateTimeString[13] + dateTimeString[14] + dateTimeString[15];
+        };
+
         return (
             <View style={styles.container}>
+                <TouchableOpacity style={{
+                    borderRadius: 100,
+                    width: '15%',
+                    aspectRatio: 1, // Utilisez un nombre pour aspectRatio, pas une chaîne
+                    backgroundColor: 'rgb(0, 123, 255)',
+                    position: 'absolute', // Utilisez 'absolute' pour un positionnement fixe
+                    bottom: 30,
+                    right: 30,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    zIndex: 99,
+                }}
+                onPress={() => this.setState({ showAjouterModal: true })}>
+                    <Text
+                    style={{
+                        fontSize: 30,
+                        color: '#fff',
+                    }}>+</Text>
+                </TouchableOpacity>
                 <FlatList
                     data={this.state.dataCours}
                     renderItem={({ item }) => (
                         <View style={styles.coursItem}>
                             <Text style={styles.instrument}>{item.id}</Text>
                             <Text>Jour: {item.jours.libelle}</Text>
-                            <Text>Heure de début: {item.HeureDebut}</Text>
-                            <Text>Heure de fin: {item.HeureFin}</Text>
-                            <Text>Âge minimum: {item.AgeMini}</Text>
-                            <Text>Âge maximum: {item.AgeMaxi}</Text>
+                            <Text>Heures: {getFormattedTime(item.HeureDebut)} - {getFormattedTime(item.HeureFin)}</Text>
+                            <Text>Âges: {item.AgeMini} - {item.AgeMaxi}</Text>
                             <Text>Places disponibles: {item.NbPlaces}</Text>
+                            <Text>Professeur: {item.professeur.nom} {item.professeur.prenom}</Text>
+                            <Text>Instrument: {item.typeInstruments.libelle}</Text>
                             {/* Bouton "Modifier" qui ouvre le formulaire de modification */}
                             <Button
                                 title="Modifier"
@@ -108,17 +264,53 @@ class Cours extends React.Component {
                                         coursIdToModify: item.id,
                                         ageMini: item.AgeMini.toString(),
                                         ageMaxi: item.AgeMaxi.toString(),
-                                        heureDebut: item.HeureDebut,
-                                        heureFin: item.HeureFin,
+                                        heureDebut: getFormattedTime(item.HeureDebut),
+                                        heureFin: getFormattedTime(item.HeureFin),
                                         nbPlaces: item.NbPlaces.toString(),
-                                        jourCours: item.jours.libelle
+                                        jourCours: item.jours.id,
+                                        professeur: item.professeur.id,
+                                        typeInstruments: item.typeInstruments.id,
                                     })
                                 }
+                            />
+                            <Button
+                                title="Supprimer"
+                                onPress={() => {
+                                    this.setState({ showConfirmationModal: true, coursIdToDelete: item.id });
+                                }}
                             />
                         </View>
                     )}
                     keyExtractor={(item, index) => index.toString()}
                 />
+
+                {/* Modal de confirmation de suppression */}
+                <Modal
+                    visible={this.state.showConfirmationModal}
+                    transparent={true}
+                    animationType="slide"
+                >
+                    <View style={[styles.modalContainer, {height: '100%',}]}>
+                        <Text style={styles.modalTitle}>Confirmer la suppression</Text>
+                        <Text style={{ marginBottom: 20 }}>
+                            Êtes-vous sûr de vouloir supprimer ce cours ?
+                        </Text>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-around', width: '80%' }}>
+                            <Button
+                                title="Oui"
+                                onPress={() => {
+                                    this.fetchCoursDelete(this.state.coursIdToDelete);
+                                }}
+                            />
+                            <Button
+                                title="Non"
+                                onPress={() => {
+                                    this.setState({ showConfirmationModal: false, coursIdToDelete: null });
+                                }}
+                            />
+                        </View>
+                    </View>
+                </Modal>
 
                 {/* Modal pour le formulaire de modification */}
                 <Modal
@@ -126,7 +318,8 @@ class Cours extends React.Component {
                     transparent={true}
                     animationType="slide"
                 >
-                    <View style={styles.modalContainer}>
+
+                    <ScrollView contentContainerStyle={styles.modalContainer}>
                         <Text style={styles.modalTitle}>Modifier le cours :</Text>
                         <View style={styles.inputContainer}>
                             <Text style={styles.label}>Âge minimum :</Text>
@@ -173,32 +366,188 @@ class Cours extends React.Component {
                                 onChangeText={(text) => this.setState({ nbPlaces: text })}
                             />
                         </View>
+                        {/* Sélecteur de professeur */}
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Professeur :</Text>
+                            <Picker
+                                selectedValue={this.state.professeur}
+                                onValueChange={(itemValue, itemIndex) =>
+                                    this.setState({ professeur: itemValue })
+                                }
+                            >
+                                {this.state.professeurs.map((professeur) => (
+                                    <Picker.Item
+                                        key={professeur.id}
+                                        label={`${professeur.nom} ${professeur.prenom}`}
+                                        value={professeur.id}
+                                    />
+                                ))}
+                            </Picker>
+                        </View>
                         {/* Sélecteur de jour */}
                         <View style={styles.inputContainer}>
                             <Text style={styles.label}>Jour du cours :</Text>
                             <Picker
                                 selectedValue={this.state.jourCours}
-                                style={{ height: 50, width: '100%', marginBottom: 20 }}
                                 onValueChange={(itemValue, itemIndex) =>
                                     this.setState({ jourCours: itemValue })
                                 }
                             >
                                 {this.state.joursDisponibles.map((jour) => (
-                                    <Picker.Item key={jour.id} label={jour.libelle} value={jour.libelle} />
+                                    <Picker.Item key={jour.id} label={jour.libelle} value={jour.id} />
                                 ))}
                             </Picker>
                         </View>
-                        <Button
-                            title="Valider"
-                            style={{ height: 50, width: '80%', marginBottom: 20 }}
+                        {/* Sélecteur d'instrument */}
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Type d'instrument :</Text>
+                            <Picker
+                                selectedValue={this.state.typeInstruments}
+                                onValueChange={(itemValue, itemIndex) =>
+                                    this.setState({ typeInstruments: itemValue })
+                                }
+                            >
+                                {this.state.typesInstruments.map((typeInstruments) => (
+                                    <Picker.Item
+                                        key={typeInstruments.id}
+                                        label={typeInstruments.libelle}
+                                        value={typeInstruments.id}
+                                    />
+                                ))}
+                            </Picker>
+                        </View>
+                        <TouchableOpacity
+                            style={styles.button}
                             onPress={this.fetchCoursModifier}
-                        />
-                        <Button
-                            title="Annuler"
-                            style={{ height: 50, width: '80%', marginBottom: 20 }}
+                        >
+                            <Text style={styles.buttonText}>Valider</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.button}
                             onPress={() => this.setState({ showModifierModal: false })}
-                        />
-                    </View>
+                        >
+                            <Text style={styles.buttonText}>Annuler</Text>
+                        </TouchableOpacity>
+                    </ScrollView>
+                </Modal>
+
+                {/* Modal pour le formulaire d'ajout de cours */}
+                <Modal
+                    visible={this.state.showAjouterModal}
+                    transparent={true}
+                    animationType="slide"
+                >
+
+                    <ScrollView contentContainerStyle={styles.modalContainer}>
+                        <Text style={styles.modalTitle}>Ajouter un cours :</Text>
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Âge minimum :</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Âge minimum"
+                                value={this.state.ageMini}
+                                onChangeText={(text) => this.setState({ ageMini: text })}
+                            />
+                        </View>
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Âge maximum :</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Âge maximum"
+                                value={this.state.ageMaxi}
+                                onChangeText={(text) => this.setState({ ageMaxi: text })}
+                            />
+                        </View>
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Heure de début (HH:mm) :</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Heure de début (HH:mm)"
+                                value={this.state.heureDebut}
+                                onChangeText={(text) => this.setState({ heureDebut: text })}
+                            />
+                        </View>
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Heure de fin (HH:mm) :</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Heure de fin (HH:mm)"
+                                value={this.state.heureFin}
+                                onChangeText={(text) => this.setState({ heureFin: text })}
+                            />
+                        </View>
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Places disponibles :</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Places disponibles"
+                                value={this.state.nbPlaces}
+                                onChangeText={(text) => this.setState({ nbPlaces: text })}
+                            />
+                        </View>
+                        {/* Sélecteur de professeur */}
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Professeur :</Text>
+                            <Picker
+                                selectedValue={this.state.professeur}
+                                onValueChange={(itemValue, itemIndex) =>
+                                    this.setState({ professeur: itemValue })
+                                }
+                            >
+                                {this.state.professeurs.map((professeur) => (
+                                    <Picker.Item
+                                        key={professeur.id}
+                                        label={`${professeur.nom} ${professeur.prenom}`}
+                                        value={professeur.id}
+                                    />
+                                ))}
+                            </Picker>
+                        </View>
+                        {/* Sélecteur de jour */}
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Jour du cours :</Text>
+                            <Picker
+                                selectedValue={this.state.jourCours}
+                                onValueChange={(itemValue, itemIndex) =>
+                                    this.setState({ jourCours: itemValue })
+                                }
+                            >
+                                {this.state.joursDisponibles.map((jour) => (
+                                    <Picker.Item key={jour.id} label={jour.libelle} value={jour.id} />
+                                ))}
+                            </Picker>
+                        </View>
+                        {/* Sélecteur d'instrument */}
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Type d'instrument :</Text>
+                            <Picker
+                                selectedValue={this.state.typeInstruments}
+                                onValueChange={(itemValue, itemIndex) =>
+                                    this.setState({ typeInstruments: itemValue })
+                                }
+                            >
+                                {this.state.typesInstruments.map((typeInstruments) => (
+                                    <Picker.Item
+                                        key={typeInstruments.id}
+                                        label={typeInstruments.libelle}
+                                        value={typeInstruments.id}
+                                    />
+                                ))}
+                            </Picker>
+                        </View>
+                        <TouchableOpacity
+                            style={styles.button}
+                            onPress={this.fetchCoursAjouter}
+                        >
+                            <Text style={styles.buttonText}>Valider</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.button}
+                            onPress={() => this.setState({ showAjouterModal: false })}
+                        >
+                            <Text style={styles.buttonText}>Annuler</Text>
+                        </TouchableOpacity>
+                    </ScrollView>
                 </Modal>
             </View>
         );
@@ -208,25 +557,30 @@ class Cours extends React.Component {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
         backgroundColor: '#fff',
+        width: '100%'
     },
     coursItem: {
-        backgroundColor: '#f9c2ff',
+        backgroundColor: '#e3e3e3',
         padding: 20,
         marginVertical: 8,
         marginHorizontal: 16,
-    },
-    instrument: {
-        fontWeight: 'bold',
-        fontSize: 18,
+        borderRadius: 10,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
     },
     modalContainer: {
-        flex: 1,
-        justifyContent: 'center',
+        backgroundColor: 'white',
+        padding: 20,
+        borderRadius: 10,
         alignItems: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 1)',
+        justifyContent: 'center',
     },
     modalTitle: {
         fontSize: 20,
@@ -234,22 +588,34 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     input: {
-        width: '70%',
-        backgroundColor: '#fff',
-        padding: 15,
+        height: 40,
+        borderColor: 'gray',
+        borderWidth: 1,
         borderRadius: 5,
-        borderStyle: "solid"
+        paddingHorizontal: 10,
+        width: '100%',
     },
     label: {
-        width: '40%', // Ajuster la largeur en fonction de vos besoins
-        marginRight: 10,
-        textAlign: 'right',
-        fontSize: 16,
+        marginBottom: 5,
     },
     inputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
         marginBottom: 20,
+        width: '100%',
+    },
+    button: {
+        height: 50,
+        backgroundColor: 'rgb(0, 123, 255)',
+        width: '100%',
+        borderRadius: 10,
+        marginBottom: 20,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    buttonText: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: 'bold',
     },
 });
 
