@@ -167,6 +167,26 @@ class Cours extends React.Component {
             console.error('Error updating cours:', error);
         }
     };
+
+    fetchCancel = async () =>{
+        // Fermer le formulaire et recharger la liste des cours
+        this.setState({
+            showAjouterModal: false,
+            showModifierModal: false,
+            coursIdToModify: null,
+            ageMini: '',
+            ageMaxi: '',
+            heureDebut: '',
+            heureFin: '',
+            nbPlaces: '',
+            typeCours: '',
+            jourCours: '',
+            professeur: '',
+            typeInstruments: ''
+        });
+
+        await this.fetchCoursLister(); // Recharger la liste des cours après la modification
+    }
     fetchCoursAjouter = async () => {
         const {
             ageMini,
@@ -256,29 +276,37 @@ class Cours extends React.Component {
                             <Text>Professeur: {item.professeur.nom} {item.professeur.prenom}</Text>
                             <Text>Instrument: {item.typeInstruments.libelle}</Text>
                             {/* Bouton "Modifier" qui ouvre le formulaire de modification */}
-                            <Button
-                                title="Modifier"
-                                onPress={() =>
-                                    this.setState({
-                                        showModifierModal: true,
-                                        coursIdToModify: item.id,
-                                        ageMini: item.AgeMini.toString(),
-                                        ageMaxi: item.AgeMaxi.toString(),
-                                        heureDebut: getFormattedTime(item.HeureDebut),
-                                        heureFin: getFormattedTime(item.HeureFin),
-                                        nbPlaces: item.NbPlaces.toString(),
-                                        jourCours: item.jours.id,
-                                        professeur: item.professeur.id,
-                                        typeInstruments: item.typeInstruments.id,
-                                    })
-                                }
-                            />
-                            <Button
-                                title="Supprimer"
-                                onPress={() => {
-                                    this.setState({ showConfirmationModal: true, coursIdToDelete: item.id });
-                                }}
-                            />
+
+                            <View style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row'}}>
+                                <TouchableOpacity
+                                    style={[styles.button, {width: '45%', marginBottom: 0, marginTop: 10}]}
+                                    onPress={() =>
+                                        this.setState({
+                                            showModifierModal: true,
+                                            coursIdToModify: item.id,
+                                            ageMini: item.AgeMini.toString(),
+                                            ageMaxi: item.AgeMaxi.toString(),
+                                            heureDebut: getFormattedTime(item.HeureDebut),
+                                            heureFin: getFormattedTime(item.HeureFin),
+                                            nbPlaces: item.NbPlaces.toString(),
+                                            jourCours: item.jours.id,
+                                            professeur: item.professeur.id,
+                                            typeInstruments: item.typeInstruments.id,
+                                        })
+                                    }
+                                >
+                                    <Text style={styles.buttonText}>Modifier</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={[styles.button, {width: '45%', marginBottom: 0, marginTop: 10}]}
+                                    onPress={() => {
+                                        this.setState({ showConfirmationModal: true, coursIdToDelete: item.id });
+                                    }}
+                                >
+                                    <Text style={styles.buttonText}>Supprimer</Text>
+                                </TouchableOpacity>
+
+                            </View>
                         </View>
                     )}
                     keyExtractor={(item, index) => index.toString()}
@@ -424,7 +452,7 @@ class Cours extends React.Component {
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={styles.button}
-                            onPress={() => this.setState({ showModifierModal: false })}
+                            onPress={() => this.fetchCancel()}
                         >
                             <Text style={styles.buttonText}>Annuler</Text>
                         </TouchableOpacity>
@@ -543,7 +571,7 @@ class Cours extends React.Component {
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={styles.button}
-                            onPress={() => this.setState({ showAjouterModal: false })}
+                            onPress={() => this.fetchCancel()}
                         >
                             <Text style={styles.buttonText}>Annuler</Text>
                         </TouchableOpacity>
