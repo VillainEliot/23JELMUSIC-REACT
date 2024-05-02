@@ -260,7 +260,7 @@ class Cours extends React.Component {
                     borderRadius: 100,
                     width: '15%',
                     aspectRatio: 1,
-                    backgroundColor: 'rgb(0, 123, 255)',
+                    backgroundColor: 'rgb(56,86,121)',
                     position: 'absolute',
                     bottom: 30,
                     right: 30,
