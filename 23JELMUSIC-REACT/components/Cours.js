@@ -20,7 +20,7 @@ class Cours extends React.Component {
             jourCours: 1,
             joursDisponibles: [], // Liste des jours disponibles récupérés de l'API
             typeInstruments: 1,
-            typesInstruments: [],
+            typesInstruments: [], // Liste des insturments disponibles récupérés de l'API
             showConfirmationModal: false,
             coursIdToDelete: null,
         };
@@ -33,6 +33,7 @@ class Cours extends React.Component {
         this.fetchTypesInstruments();
     }
 
+    // Liste des insturments disponibles récupérés de l'API
     fetchTypesInstruments = async () => {
         try {
             const response = await fetch('http://api.holamama.fr/typeinstruments/lister');
@@ -46,6 +47,7 @@ class Cours extends React.Component {
         }
     };
 
+    // Liste des jours disponibles récupérés de l'API
     fetchJours = async () => {
         try {
             const response = await fetch('http://api.holamama.fr/jours/lister');
@@ -59,6 +61,7 @@ class Cours extends React.Component {
         }
     };
 
+    // Liste des professeur disponibles récupérés de l'API
     fetchProfesseurs = async () => {
         try {
             const response = await fetch('http://api.holamama.fr/professeur/lister');
@@ -72,6 +75,7 @@ class Cours extends React.Component {
         }
     };
 
+    // Liste les cours disponibles récupérés de l'API
     fetchCoursLister = async () => {
         try {
             const response = await fetch('http://api.holamama.fr/cours/lister/');
@@ -88,6 +92,7 @@ class Cours extends React.Component {
         }
     }
 
+    // Supprime un cours
     fetchCoursDelete = async (id) => {
         try {
             const url = `http://api.holamama.fr/cours/supprimer/${id}`;
@@ -116,6 +121,8 @@ class Cours extends React.Component {
             console.warn('Error fetching data:', error.message);
         }
     }
+
+    // Modifi un cours
     fetchCoursModifier = async () => {
         const {
             coursIdToModify,
@@ -168,6 +175,7 @@ class Cours extends React.Component {
         }
     };
 
+    // Remet à zero les varaibles
     fetchCancel = async () =>{
         // Fermer le formulaire et recharger la liste des cours
         this.setState({
@@ -187,6 +195,8 @@ class Cours extends React.Component {
 
         await this.fetchCoursLister(); // Recharger la liste des cours après la modification
     }
+
+    // Ajout un cours
     fetchCoursAjouter = async () => {
         const {
             ageMini,
@@ -245,12 +255,13 @@ class Cours extends React.Component {
 
         return (
             <View style={styles.container}>
+                {/*Bouton flotant ajouter*/}
                 <TouchableOpacity style={{
                     borderRadius: 100,
                     width: '15%',
-                    aspectRatio: 1, // Utilisez un nombre pour aspectRatio, pas une chaîne
+                    aspectRatio: 1,
                     backgroundColor: 'rgb(0, 123, 255)',
-                    position: 'absolute', // Utilisez 'absolute' pour un positionnement fixe
+                    position: 'absolute',
                     bottom: 30,
                     right: 30,
                     justifyContent: 'center',
