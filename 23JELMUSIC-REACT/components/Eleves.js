@@ -1,5 +1,5 @@
 import React from 'react';
-import {StyleSheet, Text, View, FlatList, TouchableOpacity, Modal, ScrollView, TextInput} from 'react-native';
+import {StyleSheet, Text, View, FlatList, TouchableOpacity, Modal, ScrollView, TextInput, Button} from 'react-native';
 import {Picker} from "@react-native-picker/picker";
 
 class Eleves extends React.Component {
@@ -49,6 +49,7 @@ class Eleves extends React.Component {
             showModifierModal: false,
             showAjouterModal: false,
             showConfirmationModal: false,
+            eleveIdToDelete: null,
             nom: '',
             prenom: '',
             num_rue: '',
@@ -113,6 +114,36 @@ class Eleves extends React.Component {
             console.error('Error adding eleve:', error);
         }
     };
+
+    // Supprime un eleve
+    fetchEleveDelete = async (id) => {
+        try {
+            const url = `http://api.holamama.fr/eleve/supprimer/${id}`;
+            const response = await fetch(url, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            });
+            if (!response.ok) {
+                throw new Error('Network response was not ok.');
+            }
+
+            const jsonData = await response.json();
+            console.log('success', jsonData);
+
+            // Fermer la modal de confirmation après la suppression
+            this.setState({
+                showConfirmationModal: false,
+                eleveIdToDelete: null,
+            });
+
+            // Recharger la liste des eleves
+            await this.fetchElevesLister();
+        } catch (error) {
+            console.warn('Error fetching data:', error.message);
+        }
+    }
 
     render() {
 
@@ -179,7 +210,7 @@ class Eleves extends React.Component {
                                 <TouchableOpacity
                                     style={[styles.button, {width: '30%', marginBottom: 0, marginTop: 10}]}
                                     onPress={() => {
-                                        this.setState({ showConfirmationModal: true, coursIdToDelete: item.id });
+                                        this.setState({ showConfirmationModal: true, eleveIdToDelete: item.id });
                                     }}
                                 >
                                     <Text style={styles.buttonText}>Supprimer</Text>
@@ -190,6 +221,38 @@ class Eleves extends React.Component {
                     )}
                     keyExtractor={(item, index) => index.toString()}
                 />
+
+                {/* Modal de confirmation de suppression */}
+                <Modal
+                    visible={this.state.showConfirmationModal}
+                    transparent={true}
+                    animationType="slide"
+                >
+                    <View style={[styles.modalContainer, {height: '100%',}]}>
+                        <Text style={styles.modalTitle}>Confirmer la suppression</Text>
+                        <Text style={{ marginBottom: 20 }}>
+                            {this.state.nom} {this.state.prenom}
+                        </Text>
+                        <Text style={{ marginBottom: 20 }}>
+                            Êtes-vous sûr de vouloir supprimer cette élève ?
+                        </Text>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-around', width: '80%' }}>
+                            <Button
+                                title="Oui"
+                                onPress={() => {
+                                    this.fetchEleveDelete(this.state.eleveIdToDelete);
+                                }}
+                            />
+                            <Button
+                                title="Non"
+                                onPress={() => {
+                                    this.setState({ showConfirmationModal: false, eleveIdToDelete: null });
+                                }}
+                            />
+                        </View>
+                    </View>
+                </Modal>
+
                 {/* Modal pour le formulaire d'ajout d'eleve */}
                 <Modal
                     visible={this.state.showAjouterModal}
