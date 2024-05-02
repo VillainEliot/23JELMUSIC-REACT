@@ -15,11 +15,11 @@ class Cours extends React.Component {
             heureDebut: '',
             heureFin: '',
             nbPlaces: '',
-            professeur: '',
+            professeur: 1,
             professeurs: [],// Liste des professeur disponibles récupérés de l'API
-            jourCours: '',
+            jourCours: 1,
             joursDisponibles: [], // Liste des jours disponibles récupérés de l'API
-            typeInstruments: '',
+            typeInstruments: 1,
             typesInstruments: [],
             showConfirmationModal: false,
             coursIdToDelete: null,
@@ -180,9 +180,9 @@ class Cours extends React.Component {
             heureFin: '',
             nbPlaces: '',
             typeCours: '',
-            jourCours: '',
-            professeur: '',
-            typeInstruments: ''
+            jourCours: 1,
+            professeur: 1,
+            typeInstruments: 1
         });
 
         await this.fetchCoursLister(); // Recharger la liste des cours après la modification
@@ -227,9 +227,9 @@ class Cours extends React.Component {
                 heureFin: '',
                 nbPlaces: '',
                 typeCours: '',
-                jourCours: '',
-                professeur: '',
-                typeInstruments: ''
+                jourCours: 1,
+                professeur: 1,
+                typeInstruments: 1
             });
 
             await this.fetchCoursLister(); // Recharger la liste des cours après la modification
