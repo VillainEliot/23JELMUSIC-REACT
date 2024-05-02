@@ -13,7 +13,7 @@ class Eleves extends React.Component {
             showConfirmationModal: false,
             nom: 'HERVIEU',
             prenom: 'Noä',
-            num_rue: '10',
+            numRue: '10',
             rue: 'Boulevard marechal juin',
             copos: '14000',
             ville: 'Caen',
@@ -52,7 +52,7 @@ class Eleves extends React.Component {
             eleveIdToDelete: null,
             nom: '',
             prenom: '',
-            num_rue: '',
+            numRue: '',
             rue: '',
             copos: '',
             ville: '',
@@ -64,12 +64,12 @@ class Eleves extends React.Component {
     }
 
 
-    // Ajout un cours
+    // Ajout un eleve
     fetchEleveAjouter = async () => {
         const {
             nom,
             prenom,
-            num_rue,
+            numRue,
             rue,
             copos,
             ville,
@@ -78,7 +78,7 @@ class Eleves extends React.Component {
         } = this.state;
 
         try {
-            const url = `http://api.holamama.fr/eleve/ajouter?nom=${nom}&prenom=${prenom}&num_rue=${num_rue}&rue=${rue}&copos=${copos}&ville=${ville}&tel=${tel}&mail=${mail}`;
+            const url = `http://api.holamama.fr/eleve/ajouter?nom=${nom}&prenom=${prenom}&num_rue=${numRue}&rue=${rue}&copos=${copos}&ville=${ville}&tel=${tel}&mail=${mail}`;
 
             const response = await fetch(url, {
                 method: 'PUT',
@@ -101,7 +101,7 @@ class Eleves extends React.Component {
                 showConfirmationModal: false,
                 nom: '',
                 prenom: '',
-                num_rue: '',
+                numRue: '',
                 rue: '',
                 copos: '',
                 ville: '',
@@ -109,7 +109,7 @@ class Eleves extends React.Component {
                 mail: '',
             });
 
-            await this.fetchElevesLister(); // Recharger la liste des cours après la modification
+            await this.fetchElevesLister(); // Recharger la liste des eleves après la modification
         } catch (error) {
             console.error('Error adding eleve:', error);
         }
@@ -144,6 +144,59 @@ class Eleves extends React.Component {
             console.warn('Error fetching data:', error.message);
         }
     }
+
+    // Modifier un eleve
+    fetchEleveModifier = async () => {
+        const {
+            eleveToModify,
+            nom,
+            prenom,
+            numRue,
+            rue,
+            copos,
+            ville,
+            tel,
+            mail,
+        } = this.state;
+
+        try {
+            const url = `http://api.holamama.fr/eleve/modifier/${eleveToModify}?nom=${nom}&prenom=${prenom}&num_rue=${numRue}&rue=${rue}&copos=${copos}&ville=${ville}&tel=${tel}&mail=${mail}`;
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const responseData = await response.json();
+            console.log('Eleve updated successfully:', responseData);
+
+            // Fermer le formulaire et recharger la liste des eleve
+            this.setState({
+                showModifierModal: false,
+                showAjouterModal: false,
+                showConfirmationModal: false,
+                nom: '',
+                prenom: '',
+                numRue: '',
+                rue: '',
+                copos: '',
+                ville: '',
+                tel: '',
+                mail: '',
+            });
+
+            await this.fetchElevesLister(); // Recharger la liste des eleve après la modification
+        } catch (error) {
+            console.error('Error updating eleve:', error);
+        }
+    };
+
 
     render() {
 
@@ -183,7 +236,7 @@ class Eleves extends React.Component {
                                 <TouchableOpacity
                                     style={[styles.button, {width: '30%', marginBottom: 0, marginTop: 10}]}
                                     onPress={() => {
-                                        this.setState({ showConfirmationModal: true, coursIdToDelete: item.id });
+
                                     }}
                                 >
                                     <Text style={styles.buttonText}>Contrats</Text>
@@ -193,15 +246,15 @@ class Eleves extends React.Component {
                                     onPress={() =>
                                         this.setState({
                                             showModifierModal: true,
-                                            coursIdToModify: item.id,
-                                            ageMini: item.AgeMini.toString(),
-                                            ageMaxi: item.AgeMaxi.toString(),
-                                            heureDebut: getFormattedTime(item.HeureDebut),
-                                            heureFin: getFormattedTime(item.HeureFin),
-                                            nbPlaces: item.NbPlaces.toString(),
-                                            jourCours: item.jours.id,
-                                            professeur: item.professeur.id,
-                                            typeInstruments: item.typeInstruments.id,
+                                            eleveToModify: item.id,
+                                            nom: item.nom,
+                                            prenom: item.prenom,
+                                            numRue: item.numRue,
+                                            rue: item.rue,
+                                            copos: item.copos,
+                                            ville: item.ville,
+                                            tel: item.tel,
+                                            mail: item.mail,
                                         })
                                     }
                                 >
@@ -210,7 +263,7 @@ class Eleves extends React.Component {
                                 <TouchableOpacity
                                     style={[styles.button, {width: '30%', marginBottom: 0, marginTop: 10}]}
                                     onPress={() => {
-                                        this.setState({ showConfirmationModal: true, eleveIdToDelete: item.id });
+                                        this.setState({ showConfirmationModal: true, eleveIdToDelete: item.id, nom: item.nom, prenom: item.prenom });
                                     }}
                                 >
                                     <Text style={styles.buttonText}>Supprimer</Text>
@@ -246,7 +299,7 @@ class Eleves extends React.Component {
                             <Button
                                 title="Non"
                                 onPress={() => {
-                                    this.setState({ showConfirmationModal: false, eleveIdToDelete: null });
+                                    this.setState({ showConfirmationModal: false, eleveIdToDelete: null, nom: '', prenom: '' });
                                 }}
                             />
                         </View>
@@ -338,6 +391,103 @@ class Eleves extends React.Component {
                         <TouchableOpacity
                             style={styles.button}
                             onPress={this.fetchEleveAjouter}
+                        >
+                            <Text style={styles.buttonText}>Valider</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.button}
+                            onPress={() => this.fetchCancel()}
+                        >
+                            <Text style={styles.buttonText}>Annuler</Text>
+                        </TouchableOpacity>
+                    </ScrollView>
+                </Modal>
+
+                {/* Modal pour le formulaire de modification d'eleve */}
+                <Modal
+                    visible={this.state.showModifierModal}
+                    transparent={true}
+                    animationType="slide"
+                >
+
+                    <ScrollView contentContainerStyle={styles.modalContainer}>
+                        <Text style={styles.modalTitle}>Modifier un élève :</Text>
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Nom :</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Nom"
+                                value={this.state.nom}
+                                onChangeText={(text) => this.setState({ nom: text })}
+                            />
+                        </View>
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Prénom :</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Prénom"
+                                value={this.state.prenom}
+                                onChangeText={(text) => this.setState({ prenom: text })}
+                            />
+                        </View>
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>N°Rue :</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="N°Rue"
+                                value={this.state.numRue}
+                                onChangeText={(text) => this.setState({ numRue: text })}
+                            />
+                        </View>
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Rue :</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Rue"
+                                value={this.state.rue}
+                                onChangeText={(text) => this.setState({ rue: text })}
+                            />
+                        </View>
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Code postal :</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Code postal"
+                                value={this.state.copos}
+                                onChangeText={(text) => this.setState({ copos: text })}
+                            />
+                        </View>
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Ville :</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Ville"
+                                value={this.state.ville}
+                                onChangeText={(text) => this.setState({ ville: text })}
+                            />
+                        </View>
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Téléphone :</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Téléphone"
+                                value={this.state.tel}
+                                onChangeText={(text) => this.setState({ tel: text })}
+                            />
+                        </View>
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Mail :</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Mail"
+                                value={this.state.mail}
+                                onChangeText={(text) => this.setState({ mail: text })}
+                            />
+                        </View>
+
+                        <TouchableOpacity
+                            style={styles.button}
+                            onPress={this.fetchEleveModifier}
                         >
                             <Text style={styles.buttonText}>Valider</Text>
                         </TouchableOpacity>
