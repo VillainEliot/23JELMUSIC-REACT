@@ -234,15 +234,7 @@ class Eleves extends React.Component {
                             <Text>Mail: {item.mail}</Text>
                             <View style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row'}}>
                                 <TouchableOpacity
-                                    style={[styles.button, {width: '30%', marginBottom: 0, marginTop: 10}]}
-                                    onPress={() => {
-
-                                    }}
-                                >
-                                    <Text style={styles.buttonText}>Contrats</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={[styles.button, {width: '30%', marginBottom: 0, marginTop: 10}]}
+                                    style={[styles.button, {width: '45%', marginBottom: 0, marginTop: 10}]}
                                     onPress={() =>
                                         this.setState({
                                             showModifierModal: true,
@@ -261,7 +253,7 @@ class Eleves extends React.Component {
                                     <Text style={styles.buttonText}>Modifier</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
-                                    style={[styles.button, {width: '30%', marginBottom: 0, marginTop: 10}]}
+                                    style={[styles.button, {width: '45%', marginBottom: 0, marginTop: 10}]}
                                     onPress={() => {
                                         this.setState({ showConfirmationModal: true, eleveIdToDelete: item.id, nom: item.nom, prenom: item.prenom });
                                     }}
