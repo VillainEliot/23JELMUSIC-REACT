@@ -9,7 +9,10 @@ class Cours extends React.Component {
             dataCours: [],
             showModifierModal: false,
             showAjouterModal: false,
+            showAjouterInscriptionModal: false,
+            showListeInscriptionModal: false,
             coursIdToModify: null,
+            coursIdToInscription: null,
             ageMini: '',
             ageMaxi: '',
             heureDebut: '',
@@ -21,6 +24,9 @@ class Cours extends React.Component {
             joursDisponibles: [], // Liste des jours disponibles récupérés de l'API
             typeInstruments: 1,
             typesInstruments: [], // Liste des insturments disponibles récupérés de l'API
+            dataEleves: [], // Liste des élèves récupérés de l'API
+            dataEleve: 1, // Liste des élèves récupérés de l'API
+            dataInscription: [], // Liste les inscriptions d'un cours récupérés de l'API
             showConfirmationModal: false,
             coursIdToDelete: null,
         };
@@ -28,6 +34,7 @@ class Cours extends React.Component {
 
     componentDidMount() {
         this.fetchCoursLister();
+        this.fetchElevesLister();
         this.fetchProfesseurs();
         this.fetchJours();
         this.fetchTypesInstruments();
@@ -181,6 +188,8 @@ class Cours extends React.Component {
         this.setState({
             showAjouterModal: false,
             showModifierModal: false,
+            showAjouterInscriptionModal: false,
+            showListeInscriptionModal: false,
             coursIdToModify: null,
             ageMini: '',
             ageMaxi: '',
@@ -248,6 +257,89 @@ class Cours extends React.Component {
         }
     };
 
+    //Lister les élèves
+    fetchElevesLister = async () => {
+        try {
+            const response = await fetch('http://api.holamama.fr/eleve/lister/');
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok.');
+            }
+
+            const jsonData = await response.json();
+            this.setState({ dataEleves: jsonData });
+            console.log('success', jsonData);
+        } catch (error) {
+            console.warn('Error fetching data:', error.message);
+        }
+    }
+
+    //Lister les inscriptions
+    fetchInscriptionLister = async (id) => {
+        this.setState({
+            showListeInscriptionModal: true,
+            coursIdToInscription: id,
+        })
+        try {
+            const response = await fetch(`http://api.holamama.fr/inscription/lister/${id}`);
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok.');
+            }
+
+            const jsonData = await response.json();
+            this.setState({ dataInscription: jsonData });
+            console.log('success', jsonData);
+        } catch (error) {
+            console.warn('Error fetching data:', error.message);
+        }
+    }
+
+    //supprimer une inscription
+    fetchInscriptionSupprimer = async (item) => {
+        try {
+            const response = await fetch(`http://api.holamama.fr/inscription/supprimer/${item.id}`,{
+                method: 'DELETE',
+                    headers: {
+                    'Content-Type': 'application/json'
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok.');
+            }
+            const jsonData = await response.json();
+            console.log(jsonData);
+            this.fetchInscriptionLister(item.cours.id);
+        } catch (error) {
+            console.warn('Error fetching data:', error.message);
+        }
+    }
+
+    //Ajoute une inscription
+    fetchInscriptionAjouter = async (coursIdToInscription, eleveIdToInscription) => {
+        try {
+            const response = await fetch(`http://api.holamama.fr/inscription/ajouter?coursIdToInscription=${coursIdToInscription}&eleveIdToInscription=${eleveIdToInscription}`,{
+                method: 'PUT',
+                    headers: {
+                    'Content-Type': 'application/json'
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok.');
+            }
+            const jsonData = await response.json();
+            console.log(jsonData);
+            this.fetchInscriptionLister(coursIdToInscription);
+            this.setState({
+                showAjouterInscriptionModal: false,
+            });
+        } catch (error) {
+            console.warn('Error fetching data:', error.message);
+        }
+    }
+
     render() {
         const getFormattedTime = (dateTimeString) => {
             return dateTimeString[11] + dateTimeString[12] + dateTimeString[13] + dateTimeString[14] + dateTimeString[15];
@@ -279,7 +371,14 @@ class Cours extends React.Component {
                     data={this.state.dataCours}
                     renderItem={({ item }) => (
                         <View style={styles.coursItem}>
-                            <Text style={styles.instrument}>{item.id}</Text>
+                            <TouchableOpacity
+                                style={[styles.button, {width: 'auto', padding: 4, marginBottom: 0, marginTop: 10, height: 30, position: 'absolute', right: 10, zIndex: 1}]}
+                                onPress={() =>
+                                    this.fetchInscriptionLister(item.id)
+                                }
+                            >
+                                <Text style={styles.buttonText}>Inscriptions élèves</Text>
+                            </TouchableOpacity>
                             <Text>Jour: {item.jours.libelle}</Text>
                             <Text>Heures: {getFormattedTime(item.HeureDebut)} - {getFormattedTime(item.HeureFin)}</Text>
                             <Text>Âges: {item.AgeMini} - {item.AgeMaxi}</Text>
@@ -290,7 +389,7 @@ class Cours extends React.Component {
 
                             <View style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row'}}>
                                 <TouchableOpacity
-                                    style={[styles.button, {width: '45%', marginBottom: 0, marginTop: 10}]}
+                                    style={[styles.button, {width: '45%', marginBottom: 0, marginTop: 10, height: 40}]}
                                     onPress={() =>
                                         this.setState({
                                             showModifierModal: true,
@@ -309,7 +408,7 @@ class Cours extends React.Component {
                                     <Text style={styles.buttonText}>Modifier</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
-                                    style={[styles.button, {width: '45%', marginBottom: 0, marginTop: 10}]}
+                                    style={[styles.button, {width: '45%', marginBottom: 0, marginTop: 10, height: 40}]}
                                     onPress={() => {
                                         this.setState({ showConfirmationModal: true, coursIdToDelete: item.id });
                                     }}
@@ -588,6 +687,124 @@ class Cours extends React.Component {
                         </TouchableOpacity>
                     </ScrollView>
                 </Modal>
+
+                {/* Modal liste inscription des cours */}
+                <Modal
+                    visible={this.state.showListeInscriptionModal}
+                    transparent={true}
+                    animationType="slide"
+                >
+                    {/*Bouton flotant ajouter*/}
+                    <TouchableOpacity style={{
+                        borderRadius: 100,
+                        width: '15%',
+                        aspectRatio: 1,
+                        backgroundColor: 'rgb(56,86,121)',
+                        position: 'absolute',
+                        bottom: 30,
+                        right: 30,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        zIndex: 99,
+                    }}
+                        onPress={() => this.setState({ showAjouterInscriptionModal: true })}>
+                        <Text
+                            style={{
+                                fontSize: 30,
+                                color: '#fff',
+                            }}>+</Text>
+                    </TouchableOpacity>
+
+                    {/*Bouton close modal liste inscription des cours*/}
+                    <TouchableOpacity
+                        style={{
+                            width: '100%',
+                            height: 35,
+                            backgroundColor: 'rgb(255,255,255)',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            zIndex: 100,
+                        }}
+                        onPress={() => this.setState({ showListeInscriptionModal: false })}
+                    >
+                        <Text
+                            style={{
+                                fontSize: 30,
+                                margin:0,
+                                padding:0,
+                                width: '90%',
+                                textAlign: 'right',
+                                color: '#3d3d3d',
+                            }}>x</Text>
+                    </TouchableOpacity>
+                    <View style={{backgroundColor: '#fff',width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+                        <Text style={[{width: '100%', margin:'auto 0 auto 0', textAlign: 'center', fontSize: 18}]}>Élèves inscrits</Text>
+                    </View>
+                    <FlatList
+                        data={this.state.dataInscription}
+                        contentContainerStyle={styles.container}
+                        renderItem={({ item }) => (
+                            <View style={[styles.coursItem, {display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row'}]}>
+                                <Text>{item.eleve.nom} {item.eleve.prenom}</Text>
+                                {/* Bouton "Modifier" qui ouvre le formulaire de modification */}
+
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            // a faire la suppression de l'inscription
+                                            this.fetchInscriptionSupprimer(item);
+                                        }}
+                                    >
+                                        <Text style={styles.buttonText}>🗑️</Text>
+                                    </TouchableOpacity>
+
+                            </View>
+                        )}
+                        keyExtractor={(item, index) => index.toString()}
+                    />
+                    {/* Modal inscription des cours */}
+                    <Modal
+                        visible={this.state.showAjouterInscriptionModal}
+                        transparent={true}
+                        animationType="slide"
+                    >
+                        <ScrollView contentContainerStyle={styles.modalContainer}>
+                            <Text style={styles.modalTitle}>Inscrire un élève :</Text>
+
+                            {/* Sélecteur d'élèves */}
+                            <View style={styles.inputContainer}>
+                                <Text style={styles.label}></Text>
+                                <Picker
+                                    selectedValue={this.state.dataEleve}
+                                    onValueChange={(itemValue, itemIndex) =>
+                                        this.setState({ dataEleve: itemValue })
+                                    }
+                                >
+                                    {this.state.dataEleves.map((dataEleves) => (
+                                        <Picker.Item
+                                            key={dataEleves.id}
+                                            label={`${dataEleves.nom} ${dataEleves.prenom}`}
+                                            value={dataEleves.id}
+                                        />
+                                    ))}
+                                </Picker>
+                            </View>
+                            <TouchableOpacity
+                                style={styles.button}
+                                onPress={() => this.fetchInscriptionAjouter(this.state.coursIdToInscription,this.state.dataEleve)}
+                            >
+                                <Text style={styles.buttonText}>Valider</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.button}
+                                onPress={() => this.fetchCancel()}
+                            >
+                                <Text style={styles.buttonText}>Annuler</Text>
+                            </TouchableOpacity>
+                        </ScrollView>
+
+                    </Modal>
+
+                </Modal>
             </View>
         );
     }
@@ -620,6 +837,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         alignItems: 'center',
         justifyContent: 'center',
+        minHeight: '100%'
     },
     modalTitle: {
         fontSize: 20,
