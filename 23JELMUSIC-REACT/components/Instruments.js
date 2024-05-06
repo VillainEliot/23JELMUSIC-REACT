@@ -20,7 +20,7 @@ class Instruments extends React.Component {
     }
 
     fetchInstrumentsData = () => {
-        axios.get('http://192.168.245.188/23JELMUSIC_API/public/instrument/lister')
+        axios.get('http://192.168.34.166/23JELMUSIC_API/public/instrument/lister')
             .then(response => {
                 this.setState({
                     instrumentsData: response.data,
@@ -45,13 +45,34 @@ class Instruments extends React.Component {
         this.setState({ editingInstrumentId: null });
     };
 
-    handleSaveInstrument = (updatedInstrumentData) => {
-        // Logique de sauvegarde de l'instrument modifié
-        // Par exemple, envoyer les données modifiées à l'API
-        console.log('Instrument modifié :', updatedInstrumentData);
-        // Ensuite, réinitialiser l'état pour fermer le formulaire de modification
-        this.setState({ editingInstrumentId: null });
+    handleSaveInstrument = (modifiedInstrument) => {
+        const { id } = modifiedInstrument;
+    
+        // Mettre à jour localement les données de l'instrument modifié
+        const updatedInstrumentsData = this.state.instrumentsData.map(item => {
+            if (item.id === id) {
+                return modifiedInstrument;
+            }
+            return item;
+        });
+        this.setState({ instrumentsData: updatedInstrumentsData, editingInstrumentId: null });
+        
+        // Construire l'URL de l'API pour la modification de l'instrument
+        const apiUrl = `http://192.168.34.166/23JELMUSIC_API/public/instrument/modifier/${id}?nom=${encodeURIComponent(modifiedInstrument.nom)}&num_serie=${encodeURIComponent(modifiedInstrument.numSerie)}&prix_achat=${encodeURIComponent(modifiedInstrument.prixAchat)}&marque_id=${encodeURIComponent(modifiedInstrument.marqueId)}&type_id=${encodeURIComponent(modifiedInstrument.typeId)}&utilisation=${encodeURIComponent(modifiedInstrument.utilisation)}&cheminImage=${encodeURIComponent(modifiedInstrument.cheminImage)}`;
+
+        axios.post(apiUrl)
+            .then(response => {
+                // Afficher un message de succès si la requête est réussie
+                Alert.alert('Succès', 'L\'instrument a été modifié avec succès.');
+            })
+            .catch(error => {
+                // En cas d'erreur, annuler les modifications locales et afficher un message d'erreur
+                console.error('Error updating instrument:', error);
+                this.setState({ instrumentsData: this.state.instrumentsData });
+                Alert.alert('Erreur', 'Une erreur s\'est produite lors de la modification de l\'instrument. Les modifications locales ont été annulées. Veuillez réessayer.');
+            });
     };
+    
 
     handleViewDetails = (id) => {
         this.setState({ selectedInstrumentId: id });
@@ -69,26 +90,27 @@ class Instruments extends React.Component {
                 },
                 {
                     text: 'Supprimer',
-                    onPress: () => this.confirmDeleteInstrument(id),
+                    onPress: () => this.optimisticDeleteInstrument(id),
                 },
             ],
             { cancelable: false }
         );
     };
-
-    confirmDeleteInstrument = (id) => {
+    
+    optimisticDeleteInstrument = (id) => {
+        // Supprimer l'instrument localement avant d'envoyer la requête à l'API
+        const updatedInstrumentsData = this.state.instrumentsData.filter(item => item.id !== id);
+        this.setState({ instrumentsData: updatedInstrumentsData });
+    
         // Envoyer une requête de suppression à l'API
-        axios.delete(`http://192.168.245.188/23JELMUSIC_API/public/instrument/supprimer/${id}`)
+        axios.delete(`http://192.168.34.166/23JELMUSIC_API/public/instrument/supprimer/${id}`)
             .then(response => {
-                // Mettre à jour l'état après la suppression
-                this.setState(prevState => ({
-                    instrumentsData: prevState.instrumentsData.filter(item => item.id !== id),
-                    selectedInstrumentId: null,
-                }));
                 Alert.alert('Succès', 'L\'instrument a été supprimé avec succès.');
             })
             .catch(error => {
                 console.error('Error deleting instrument:', error);
+                // Si la suppression échoue, annuler la suppression locale et revenir à l'état précédent
+                this.setState({ instrumentsData: this.state.instrumentsData });
                 Alert.alert('Erreur', 'Une erreur s\'est produite lors de la suppression de l\'instrument. Veuillez réessayer.');
             });
     };
@@ -123,7 +145,6 @@ class Instruments extends React.Component {
                     <Text>Date d'achat: {new Date(selectedInstrument.dateAchat).toLocaleDateString('fr-FR')}</Text>
                     <Text>Prix d'achat: {selectedInstrument.prixAchat}</Text>
                     <Text>Utilisation: {selectedInstrument.utilisation}</Text>
-                    <Text>Accessoires: {selectedInstrument.accessoires.map(accessoire => accessoire.libelle).join(', ')}</Text>
                     <TouchableOpacity onPress={() => this.setState({ selectedInstrumentId: null })}>
                         <Text style={styles.editButton}>Retour</Text>
                     </TouchableOpacity>
@@ -151,7 +172,6 @@ class Instruments extends React.Component {
                                 <Text>Date d'achat: {new Date(item.dateAchat).toLocaleDateString('fr-FR')}</Text>
                                 <Text>Prix d'achat: {item.prixAchat}</Text>
                                 <Text>Utilisation: {item.utilisation}</Text>
-                                <Text>Accessoires: {item.accessoires.map(accessoire => accessoire.libelle).join(', ')}</Text>
                                 <TouchableOpacity onPress={() => this.handleEditInstrument(item.id)}>
                                     <Text style={styles.editButton}>Modifier</Text>
                                 </TouchableOpacity>

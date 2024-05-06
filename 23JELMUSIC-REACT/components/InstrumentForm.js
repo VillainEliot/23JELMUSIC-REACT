@@ -1,19 +1,22 @@
 import React from 'react';
-import { View, TextInput, Button, StyleSheet } from 'react-native';
+import { StyleSheet, View, TextInput, Button } from 'react-native';
+import {Picker} from '@react-native-picker/picker';
 
 class InstrumentForm extends React.Component {
     constructor(props) {
         super(props);
+        const { instrument, marques, types } = props;
         this.state = {
-            nom: props.instrument.nom,
-            marque: props.instrument.marque.libelle,
-            type: props.instrument.type.libelle,
-            numSerie: props.instrument.numSerie,
-            dateAchat: props.instrument.dateAchat,
-            prixAchat: props.instrument.prixAchat,
-            utilisation: props.instrument.utilisation,
-            accessoires: props.instrument.accessoires.map(accessoire => accessoire.libelle).join(', '),
-            couleurs: props.instrument.couleurs.map(couleur => couleur.nom).join(', '),
+            id: instrument.id,
+            nom: instrument.nom,
+            numSerie: instrument.numSerie.toString(),
+            prixAchat: instrument.prixAchat.toString(),
+            utilisation: instrument.utilisation,
+            cheminImage: instrument.cheminImage,
+            marqueId: instrument.marque.id.toString(),
+            typeId: instrument.type.id.toString(),
+            marques: marques,
+            types: types,
         };
     }
 
@@ -21,8 +24,19 @@ class InstrumentForm extends React.Component {
         this.setState({ [fieldName]: value });
     };
 
+    saveChanges = () => {
+        const { onSave } = this.props;
+        onSave(this.state);
+    };
+
     render() {
-        const { onSave, onCancel } = this.props;
+        const { onCancel } = this.props;
+        const { marques, types, marqueId, typeId } = this.state;
+
+        console.log('marques:', marques);
+        console.log('types:', types);
+        console.log('marqueId:', marqueId);
+        console.log('typeId:', typeId);
 
         return (
             <View style={styles.container}>
@@ -34,32 +48,14 @@ class InstrumentForm extends React.Component {
                 />
                 <TextInput
                     style={styles.input}
-                    placeholder="Marque"
-                    value={this.state.marque}
-                    onChangeText={(text) => this.handleInputChange('marque', text)}
-                />
-                <TextInput
-                    style={styles.input}
-                    placeholder="Type"
-                    value={this.state.type}
-                    onChangeText={(text) => this.handleInputChange('type', text)}
-                />
-                <TextInput
-                    style={styles.input}
                     placeholder="Numéro de série"
-                    value={this.state.numSerie.toString()}
+                    value={this.state.numSerie}
                     onChangeText={(text) => this.handleInputChange('numSerie', text)}
                 />
                 <TextInput
                     style={styles.input}
-                    placeholder="Date d'achat"
-                    value={new Date(this.state.dateAchat.toString()).toLocaleDateString('fr-FR')}
-                    onChangeText={(text) => this.handleInputChange('dateAchat', text)}
-                />
-                <TextInput
-                    style={styles.input}
                     placeholder="Prix d'achat"
-                    value={this.state.prixAchat.toString()}
+                    value={this.state.prixAchat}
                     onChangeText={(text) => this.handleInputChange('prixAchat', text)}
                 />
                 <TextInput
@@ -70,11 +66,27 @@ class InstrumentForm extends React.Component {
                 />
                 <TextInput
                     style={styles.input}
-                    placeholder="Accessoires"
-                    value={this.state.accessoires}
-                    onChangeText={(text) => this.handleInputChange('accessoires', text)}
+                    placeholder="Chemin de l'image"
+                    value={this.state.cheminImage}
+                    onChangeText={(text) => this.handleInputChange('cheminImage', text)}
                 />
-                <Button title="Enregistrer" onPress={() => onSave(this.state)} />
+                <Picker
+                    selectedValue={marqueId}
+                    style={styles.select}
+                    onValueChange={(itemValue) => this.handleInputChange('marqueId', itemValue)}>
+                    {marques && marques.map((marque) => (
+                        <Picker.Item key={marque.id} label={marque.libelle} value={marque.id.toString()} />
+                    ))}
+                </Picker>
+                <Picker
+                    selectedValue={typeId}
+                    style={styles.select}
+                    onValueChange={(itemValue) => this.handleInputChange('typeId', itemValue)}>
+                    {types && types.map((type) => (
+                        <Picker.Item key={type.id} label={type.libelle} value={type.id.toString()} />
+                    ))}
+                </Picker>
+                <Button title="Enregistrer" onPress={this.saveChanges} />
                 <Button title="Annuler" onPress={onCancel} />
             </View>
         );
@@ -95,6 +107,11 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         marginBottom: 10,
         paddingHorizontal: 10,
+    },
+    select: {
+        height: 40,
+        width: '80%',
+        marginBottom: 10,
     },
 });
 
