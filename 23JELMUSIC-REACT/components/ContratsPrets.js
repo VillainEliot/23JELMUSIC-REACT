@@ -106,17 +106,17 @@ class Cours extends React.Component {
     fetchContratPretModifier = async () => {
         const {
             contratPretIdToModify,
-            datedebut,
+            dateDebut,
             dateFin,
             attestationAssurance,
             etatDetailleDebut,
             etatDetailleRetour,
             eleve,
-            instrument
+            instrument,
         } = this.state;
 
         try {
-            const url = `http://vps.holamama.fr/contratPret/modifier/${contratPretIdToModify}?dateDebut=${datedebut}&dateFin=${dateFin}&attestationAssurance=${attestationAssurance}&etatDetailleDebut=${etatDetailleDebut}&etatDetailleRetour=${etatDetailleRetour}&eleve=${eleve}&instrument=${instrument}`;
+            const url = `http://vps.holamama.fr/contratPret/modifier/${contratPretIdToModify}?dateDebut=${dateDebut}&dateFin=${dateFin}&attestationAssurance=${attestationAssurance}&etatDetailleDebut=${etatDetailleDebut}&etatDetailleRetour=${etatDetailleRetour}&eleve=${eleve}&instrument=${instrument}`;
 
             const response = await fetch(url, {
                 method: 'POST',
@@ -141,12 +141,12 @@ class Cours extends React.Component {
                 etatDetailleDebut: '',
                 etatDetailleRetour: '',
                 eleve: '',
-                instrument: ''
+                instrument: '',
             });
 
             await this.fetchContratPretLister();
         } catch (error) {
-            console.error('Error updating cours:', error);
+            console.error('Error updating ContratPret:', error);
         }
     };
 
@@ -161,7 +161,7 @@ class Cours extends React.Component {
             etatDetailleDebut: '',
             etatDetailleRetour: '',
             eleve: 1,
-            instrument: 1
+            instrument: 1,
         });
 
         await this.fetchContratPretLister();
@@ -170,18 +170,19 @@ class Cours extends React.Component {
     // Ajout un cours
     fetchContratPretAjouter = async () => {
         const {
-            datedebut,
+            dateDebut,
             dateFin,
             attestationAssurance,
             etatDetailleDebut,
             etatDetailleRetour,
             eleve,
-            instrument
+            instrument,
         } = this.state;
 
         try {
-            const url = `http://api.holamama.fr/contratPret/ajouter?dateDebut=${datedebut}&dateFin=${dateFin}&attestationAssurance=${attestationAssurance}&etatDetailleDebut=${etatDetailleDebut}&etatDetailleRetour=${etatDetailleRetour}&eleve=${eleve}&instrument=${instrument}`;
+            const url = `http://api.holamama.fr/contratPret/ajouter?dateDebut=${dateDebut}&dateFin=${dateFin}&attestationAssurance=${attestationAssurance}&etatDetailleDebut=${etatDetailleDebut}&etatDetailleRetour=${etatDetailleRetour}&eleve=${eleve}&instrument=${instrument}`;
             //http://api.holamama.fr/contratPret/ajouter?dateDebut=2024-04-03&dateFin=2024-05-03&attestationAssurance=Assu.pdf&etatDetailleDebut=Neuf&etatDetailleRetour=Très Bon&eleve=1&instrument=1
+            //http://api.holamama.fr/contratPret/ajouter?dateDebut=${datedebut}&dateFin=${dateFin}&attestationAssurance=${attestationAssurance}&etatDetailleDebut=${etatDetailleDebut}&etatDetailleRetour=${etatDetailleRetour}&eleve=${eleve}&instrument=${instrument}
             const response = await fetch(url, {
                 method: 'PUT',
                 headers: {
@@ -211,11 +212,15 @@ class Cours extends React.Component {
 
             await this.fetchContratPretLister();
         } catch (error) {
-            console.error('Error adding cours:', error);
+            console.error('Error adding ContratPret:', error);
         }
     };
 
     render() {
+
+        const getFormattedTime = (dateTimeString) => {
+            return dateTimeString[0] + dateTimeString[1] + dateTimeString[2] + dateTimeString[3] + dateTimeString[4]+ dateTimeString[5] + dateTimeString[6] + dateTimeString[7] + dateTimeString[8] + dateTimeString[9];
+        };
 
         return (
             <View style={styles.container}>
@@ -243,8 +248,8 @@ class Cours extends React.Component {
                     data={this.state.dataContratPret}
                     renderItem={({ item }) => (
                         <View style={styles.coursItem}>
-                            <Text>Date de début: {item.dateDebut}</Text>
-                            <Text>Date de fin: {item.dateFin}</Text>
+                            <Text>Date de début: {getFormattedTime(item.dateDebut)}</Text>
+                            <Text>Date de fin: {getFormattedTime(item.dateFin)}</Text>
                             <Text>Attestation d'assurance: {item.attestationAssurance}</Text>
                             <Text>Etat de début: {item.etatDetailDebut}</Text>
                             <Text>Etat de Fin: {item.etatDetailleRetour}</Text>
@@ -259,8 +264,8 @@ class Cours extends React.Component {
                                         this.setState({
                                             showModifierModal: true,
                                             contratPretIdToModify: item.id,
-                                            dateDebut: item.dateDebut,
-                                            dateFin: item.dateDebut,
+                                            dateDebut: getFormattedTime(item.dateDebut),
+                                            dateFin: getFormattedTime(item.dateFin),
                                             attestationAssurance: item.attestationAssurance,
                                             etatDetailleDebut: item.etatDetailleDebut,
                                             etatDetailleRetour: item.etatDetailleRetour,
@@ -324,7 +329,7 @@ class Cours extends React.Component {
                     <ScrollView contentContainerStyle={styles.modalContainer}>
                         <Text style={styles.modalTitle}>Modifier le contrat de prêt :</Text>
                         <View style={styles.inputContainer}>
-                            <Text style={styles.label}>Date de début :</Text>
+                            <Text style={styles.label}>Date de début : YYYY-MM-DD</Text>
                             <TextInput
                                 style={styles.input}
                                 placeholder="Date de début du contrat"
@@ -333,7 +338,7 @@ class Cours extends React.Component {
                             />
                         </View>
                         <View style={styles.inputContainer}>
-                            <Text style={styles.label}>Date de fin :</Text>
+                            <Text style={styles.label}>Date de fin : YYYY-MM-DD</Text>
                             <TextInput
                                 style={styles.input}
                                 placeholder="Date de fin du contrat"
@@ -427,7 +432,7 @@ class Cours extends React.Component {
                     <ScrollView contentContainerStyle={styles.modalContainer}>
                         <Text style={styles.modalTitle}>Ajouter un contrat de prêt :</Text>
                         <View style={styles.inputContainer}>
-                            <Text style={styles.label}>Date de début :</Text>
+                            <Text style={styles.label}>Date de début : YYYY-MM-DD</Text>
                             <TextInput
                                 style={styles.input}
                                 placeholder="Date de début du contrat"
@@ -436,7 +441,7 @@ class Cours extends React.Component {
                             />
                         </View>
                         <View style={styles.inputContainer}>
-                            <Text style={styles.label}>Date de fin :</Text>
+                            <Text style={styles.label}>Date de fin : YYYY-MM-DD</Text>
                             <TextInput
                                 style={styles.input}
                                 placeholder="Date de fin du contrat"
