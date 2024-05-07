@@ -5,7 +5,6 @@ import Eleves from './components/Eleves';
 import ContratsPrets from './components/ContratsPrets';
 import Instruments from './components/Instruments';
 import Professionnels from './components/Professionnels';
-import Inscriptions from './components/Inscriptions';
 
 const pages = [
   { title: 'Cours', component: Cours },
@@ -13,7 +12,6 @@ const pages = [
   { title: 'Contrats Prêts', component: ContratsPrets },
   { title: 'Instruments', component: Instruments },
   { title: 'Professionnels', component: Professionnels },
-  { title: 'Inscriptions', component: Inscriptions },
 ];
 
 export default function App() {
@@ -32,8 +30,6 @@ export default function App() {
         return <Instruments />;
       case 'Professionnels':
         return <Professionnels />;
-      case 'Inscriptions':
-        return <Inscriptions />;
       default:
         return null;
     }
