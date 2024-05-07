@@ -45,7 +45,7 @@ export default function App() {
       <TouchableOpacity style={styles.menuButton} onPress={() => setMenuOpen(!menuOpen)}>
         <Text style={styles.menuButtonText}>Menu</Text>
       </TouchableOpacity>
-      
+
       <View style={[styles.absoluteContainer, { display: menuOpen ? 'flex' : 'none' }]}>
         <View style={styles.menu}>
           <FlatList
