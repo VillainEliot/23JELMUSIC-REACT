@@ -4,9 +4,9 @@ Noa / Jules / Eliot
 
 ## Pour installer le projet en local
 
-Télécharger le projet dans un dossier sur votre PC via ce lien :
+Télécharger le projet dans un dossier sur votre PC via cet commande :
 
-https://github.com/VillainEliot/23JELMUSIC-REACT.git
+'git clone https://github.com/VillainEliot/23JELMUSIC-REACT.git'
 
 Puis ensuite une fois installer vous devez ouvrir un invite de commande (CMD),
 pour vous rendre à l'endroit du projet pour ensuite exécuté cet commande :
